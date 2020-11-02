@@ -6,6 +6,7 @@
 
 * Generalize the Algorithm for Stochastic Local Search (for the PDP as a CSP) so that it allows for multiple packets per-agent
 * Implement the algorithm in logist from the skeleton files
+* Quantify algorithm's performance
 
 ## Tasks (from datum):
 
