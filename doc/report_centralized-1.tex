@@ -99,8 +99,18 @@ We initialize our \textit{COP} with a naïve solution to the pickup and delivery
 % Describe how you generate neighbors %
 The set \textit{succ} of neighbors is generated (implementation in the \texttt{neighbours} function of class \texttt{Solution}) by generating  every possible exchange of two tasks in the order of pickup/delivery of tasks and every possible change of assignment of vehicle per task. So each \textit{succ} is a set of size $N_t!+N_v\cdot N_t$.
 
-\subsection{}
+\subsection{Choosing neighbors}
+In order to minimize to cost we choose the neighbor that will replace the current plan in the next iteration according to the following law (let $0<p<1$):
 
+
+\begin{algorithm}[H]
+    \SetAlgoLined
+    \caption{Choice(N,f)}
+    With probability $p$:\\
+    \Return{$plan \in N$ such that $f$ is minimal}\\
+    else\\
+    \Return{$plan \in N$ where plan is randomly selected}
+\end{algorithm}
 
 \section{Results}
 
