@@ -29,7 +29,7 @@ We formalize the pickup and delivery problem as a \textit{constraint optimizatio
 
 \subsection{Variables}
 % Describe the variables used in your solution representation %
-Any plan can be described by a given assignment of the 4 following variables (in out implementation, a plan is represented by the \texttt{plan} class):
+Any plan can be described by a given assignment of the 4 following variables (in out implementation, a plan is represented by the \texttt{Solution} class):
 \begin{enumerate}
     \item \textbf{nextTask\_v} : the \textit{nextTask\_v} variable is an array of size $N_v$ where each element $nextTask\_v[i]$ represents the first task that the $i^{th}$ vehicle will perform.
     \subitem if $nextTask\_v[i] = j$ it means that the $i^{th}$ vehicle will start it's route by delivering the $j^{th}$ task
