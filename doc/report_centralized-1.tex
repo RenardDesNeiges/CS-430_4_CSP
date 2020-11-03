@@ -19,11 +19,39 @@
 
 \section{Solution Representation}
 
+We formalize the pickup and delivery problem as a \textit{constraint optimization problem}, where we describe an entire plan (a set of actions leading to all tasks being completed). A plan in the \textit{COP} is formally a tuple $< X, D, C, f >$ where $X$ is a set of variables describing a plan, $D$ the domain of the variables $x_i \in X$, $C$ a set of constraints that a plan needs to fulfill and $f$ a value function that we are trying to minimize. We call $N_v$ the number of vehicles and $N_t$ the number of tasks.
+
+
 \subsection{Variables}
 % Describe the variables used in your solution representation %
+Any plan can be described by a given assignment of the 4 following variables:
+\begin{enumerate}
+    \item \textbf{nextTask\_v} : the \textit{nextTask\_v} variable is an array of size $N_v$ where each element $nextTask\_v[i]$ represents the first task that the $i^{th}$ vehicle will perform.
+    \subitem if $nextTask\_v[i] = j$ it means that the $i^{th}$ vehicle will start it's route by delivering the $j^{th}$ task
+    \subitem if $nextTask\_v[i] = NULL$  it means that the $i^{th}$ vehicle has no task to deliver in the given plan.
+    \item \textbf{nextTask\_t} : the \textit{nextTask\_t} variable is an array of size $N_t$ where each element $nextTask\_t[i]$ represents the next task that the vehicle that the vehicle will pickup
+    \subitem if $nextTask\_t[i] = j$ it means that the vehicle that delivered the $i^{th}$ task will deliver the $j^{th}$ task next.
+    \subitem if $nextTask\_t[i] = NULL$  it means that the vehicle that delivered the $i^{th}$ has no task to deliver next.
+    \item \textbf{time} : the \textit{time} variable is an array of size $N_t$ where each element $time[i]$ represents the position of the $i^{th}$ task in the plan of the vehicle delivering it in the plan (so if it is the first task delivered by some vehicle we would have $time[i]$ = 1)
+    \item \textbf{vehicle} : the \textit{vehicle} variable is an array of size $N_t$ where each elements $vehicle[i]$ describes which vehicle will delivered the $i^{th}$ task
+\end{enumerate}
 
 \subsection{Constraints}
 % Describe the constraints in your solution representation %
+Not all possible variable assignments correspond to a valid plan, a valid plan is a plan that satisfies all constraints $c\in C$, the constraints are the following:
+
+\begin{align*}
+    \textit{The next task after a given task t cannot be itself} 
+    && nextTask\_t[t] \neq t \\
+    \textit{The time variable must be coherent} 
+    && nextTask\_v[i] = j \Rightarrow time(j) = 1 \\
+    \textit{} && nextTask\_t[i] = j \Rightarrow time(j) = time(i)+1 \\
+    \textit{All tasks must be delivered} && \#\textit{ NULL values in nextTask\_t}\\ && = \#\textit{ non-NULL values in nextTask\_v} \\
+    \textit{From the definition of vehicle} && nextTask\_v(k) = j \Rightarrow vehicle(j) = k \\
+    \textit{From the definitions of nextTask\_t and vehicle} && nextTask\_t[i] = j \Rightarrow vehicle[j] = vehicle[i] \\
+    \textit{From the definitions of nextTask\_v and vehicle} && nextTask\_v[i] = j \Rightarrow vehicle[j] = vehicle[i] \\
+    \textit{A vehicle cannot carry more than it's capacity} && load(i) > capacity(k) \Rightarrow vehicle(i) \neq k
+\end{align*}
 
 \subsection{Objective function}
 % Describe the function that you optimize %
