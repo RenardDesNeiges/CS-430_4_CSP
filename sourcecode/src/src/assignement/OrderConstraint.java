@@ -10,6 +10,15 @@ public class OrderConstraint extends Constraint{
 	}
 	
 	boolean compatible(Solution solution) {
-		return solution.getTime().get(this.t1) < solution.getTime().get(this.t2);
+		boolean res = true;
+		if (solution.getTime().get(this.t1) > solution.getTime().get(this.t2)) {
+			return false;
+			//System.out.println("OderConstraint");
+		}
+		return res;
+	}
+	
+	public String toString() {
+		return "OrderConstrain : [" + this.t1.toString() + ", " + this.t2.toString() + "]";
 	}
 }

@@ -31,4 +31,8 @@ public class PTask {
 	public long getWeight() {
 		return weight;
 	}
+	
+	public String toString() {
+		return "(" + this.id + ", " + this.pickup + ", " + this.city.toString() + ", " + this.weight + ")";
+	}
 }

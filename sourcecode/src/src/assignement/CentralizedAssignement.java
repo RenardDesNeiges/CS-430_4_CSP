@@ -55,7 +55,7 @@ public class CentralizedAssignement implements CentralizedBehavior{
         this.distribution = distribution;
         this.agent = agent;
         this.randomGenerator = new Random(12345);
-        this.probability = 0.4;
+        this.probability = 0.1;
 	}
 	
 	public List<Plan> plan(List<Vehicle> vehicles, TaskSet tasks) {
@@ -70,9 +70,13 @@ public class CentralizedAssignement implements CentralizedBehavior{
 		this.constraints = new ArrayList<Constraint>();
 		for(Vehicle vehicle: vehicles) 
 			this.constraints.add(new CapacityConstraint(vehicle));
-		for (int i = 0; i < this.pickups.size(); i++) {
-			this.constraints.add(new SameVehicle(this.pickups.get(i), this.deliveries.get(i)));
-			this.constraints.add(new OrderConstraint(this.pickups.get(i), this.deliveries.get(i)));
+		for (PTask pickup: this.pickups) {
+			for (PTask delivery: this.deliveries)
+				if (pickup.getID() == delivery.getID()) {
+					this.constraints.add(new SameVehicle(pickup, delivery));
+					this.constraints.add(new OrderConstraint(pickup, delivery));
+					break;
+				}
 		}
 		System.out.println("Done !");
 		
@@ -82,31 +86,50 @@ public class CentralizedAssignement implements CentralizedBehavior{
 		guess.firstGuess(vehicles, this.pickups, this.deliveries);
 		System.out.println("Done !");
 		
-		System.out.println("Building plan. Time allowed = " + (this.timeout_plan/3600));
+		System.out.println("Building plan. Time allowed = " + (this.timeout_plan/60000));
 		long time_start = System.currentTimeMillis();
-		while(System.currentTimeMillis() - time_start <= this.timeout_plan) {
+		int iteration = 0;
+		while(iteration<100) {
+			System.out.println("Iteration: " + iteration);
+			System.out.println("Building Neighbours");
 			neighbours = guess.neighbours(constraints);
+			//System.out.println(neighbours);
+			System.out.println("Done !");
+			System.out.println("Choosing Guess");
 			guess = this.localChoice(guess, neighbours, this.probability);
+			//System.out.println(guess);
+			System.out.println("Done !");
+			iteration++;
 		}
 		
 		for (Vehicle v: vehicles) {
-			City currentCityV = v.getCurrentCity();
-			Plan planV = new Plan(currentCityV);
-			PTask currentTask = guess.getNextTask_v().get(v);
-			
-			while (currentTask != null) {
-				planV.appendMove(currentTask.getCity());
-				Task temp;
-				for (Task task: tasks) {
-					if (task.id == currentTask.getID())
-						temp = task;
+			if (guess.getNextTask_v().get(v) == null)
+				plans.add(Plan.EMPTY);
+			else {
+				PTask currentTask = guess.getNextTask_v().get(v);
+				Plan planV = new Plan(v.getCurrentCity());
+				City previous = v.getCurrentCity();
+				while (currentTask != null) {
+					for (Task temp: tasks) {
+						if (temp.id == currentTask.getID()) {
+							for (City city: previous.pathTo(currentTask.getCity()))
+								planV.appendMove(city);
+							if (currentTask.getPickup())
+								planV.appendPickup(temp);
+							else
+								planV.appendDelivery(temp);
+							previous = currentTask.getCity();
+							currentTask = guess.getNextTask_t().get(currentTask);
+							break;
+						}
+					}
 				}
-				if (currentTask.getPickup())
-					planV.appendPickup(temp);
-				else
-					planV.appendDelivery(temp);
+				plans.add(planV);
 			}
 		}
+			
+			
+		System.out.println("Done !");
 		
 		return plans;
 	}
@@ -128,12 +151,17 @@ public class CentralizedAssignement implements CentralizedBehavior{
 							
 	private Solution localChoice(Solution currentGuess, List<Solution> currentNeighbours, double probability) {
 		Collections.shuffle(currentNeighbours);
-		Solution max = Collections.max(currentNeighbours);
+		Solution min = Collections.min(currentNeighbours);
+		//for (Solution sol: currentNeighbours)
+			//System.out.println(sol.cost());
+		System.out.println("Chosen: " + min.cost());
 		
-		if (this.randomGenerator.nextDouble() <= this.probability)
+		if (this.randomGenerator.nextDouble() <= this.probability) {
 			return currentGuess;
-		else
-			return max;
+		}
+		else {
+			return min;
+		}
 	}
 	
 

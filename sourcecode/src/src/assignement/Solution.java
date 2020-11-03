@@ -24,10 +24,23 @@ public class Solution implements Comparable<Solution>{
 	}
 
 	public Solution(Solution solution) {
-		this.nextTask_t = solution.getNextTask_t();
-		this.nextTask_v = solution.getNextTask_v();
-		this.time = solution.getTime();
-		this.vehicle = solution.getVehicle();
+		this.nextTask_t = new HashMap<PTask, PTask>();
+		this.nextTask_v = new HashMap<Vehicle, PTask>();
+		this.time = new HashMap<PTask, Integer>();
+		this.vehicle = new HashMap<PTask, Vehicle>();
+		
+		this.nextTask_t.putAll(solution.getNextTask_t());
+		this.nextTask_v.putAll(solution.getNextTask_v());
+		this.time.putAll(solution.getTime());
+		this.vehicle.putAll(solution.getVehicle());
+		
+		//for (PTask task: solution.getNextTask_t().keySet()) {
+			//this.nextTask_t.put(task, solution.getNextTask_t().get(task));
+			//this.time.put(task, solution.getTime().get(task));
+			//this.vehicle.put(task, solution.getVehicle().get(task));
+		//}
+		//for (Vehicle v: solution.getNextTask_v().keySet())
+			//this.nextTask_v.put(v, this.nextTask_v.get(v));
 	}
 	
 	public void firstGuess(List<Vehicle> vehicles, List<PTask> pickups, List<PTask> deliveries) {
@@ -78,8 +91,10 @@ public class Solution implements Comparable<Solution>{
 	public boolean valid(List<Constraint> constraints) {
 		boolean res = true;
 		for (Constraint constraint: constraints) {
-			if (!constraint.compatible(this))
+			if (!constraint.compatible(this)) {
 				res = false;
+				break;
+			}
 		}
 		return res;
 	}
@@ -89,7 +104,7 @@ public class Solution implements Comparable<Solution>{
 		PTask justBeforeDeliver = firstTaskPickup;
 		PTask firstTaskDeliver = this.nextTask_t.get(firstTaskPickup);
 		int ID = firstTaskPickup.getID();
-		while (ID != firstTaskPickup.getID()) {
+		while (ID != firstTaskDeliver.getID()) {
 			try {
 				justBeforeDeliver = firstTaskDeliver;
 				firstTaskDeliver = this.nextTask_t.get(firstTaskDeliver);
@@ -99,17 +114,28 @@ public class Solution implements Comparable<Solution>{
 			}
 		}
 		
-		this.nextTask_v.put(v1, this.nextTask_t.get(firstTaskPickup));
-		this.nextTask_t.put(justBeforeDeliver, this.nextTask_t.get(firstTaskDeliver));
-		this.nextTask_v.put(v2, firstTaskPickup);
-		this.nextTask_t.put(firstTaskDeliver, this.nextTask_v.get(v2));
-		this.nextTask_t.put(firstTaskPickup, firstTaskDeliver);
+		if(justBeforeDeliver == firstTaskPickup) {
+			this.nextTask_v.put(v1, this.nextTask_t.get(firstTaskDeliver));		
+			this.nextTask_t.put(firstTaskDeliver, this.nextTask_v.get(v2));
+			this.nextTask_v.put(v2, firstTaskPickup);
+			
+			this.vehicle.put(firstTaskPickup, v2);
+			this.vehicle.put(firstTaskDeliver, v2);
+		}
 		
+		
+		else {
+			this.nextTask_v.put(v1, this.nextTask_t.get(firstTaskPickup));
+			this.nextTask_t.put(justBeforeDeliver, this.nextTask_t.get(firstTaskDeliver));
+			this.nextTask_t.put(firstTaskDeliver, this.nextTask_v.get(v2));
+			this.nextTask_v.put(v2, firstTaskPickup);
+			this.nextTask_t.put(firstTaskPickup, firstTaskDeliver);
+			
+			this.vehicle.put(firstTaskPickup, v2);
+			this.vehicle.put(firstTaskDeliver, v2);
+		}
 		this.updateTime(v1);
 		this.updateTime(v2);
-		
-		this.vehicle.put(firstTaskPickup, v2);
-		this.vehicle.put(firstTaskDeliver, v2);
 	}
 	
 	public void updateTime(Vehicle v) {
@@ -131,34 +157,59 @@ public class Solution implements Comparable<Solution>{
 		PTask postT1 = this.nextTask_t.get(t1);
 		PTask postT2 = this.nextTask_t.get(t2);
 		
-		PTask temp = this.nextTask_v.get(v);
-		PTask prevTemp = null;
-		while (temp != t1) {
-			try {
-				prevTemp = temp;
-				temp = this.nextTask_t.get(temp);
+		if (t2 == postT1) {
+			PTask prev = null;
+			PTask next = this.nextTask_v.get(v);
+			while (next != t1) {
+				try {
+					prev = next;
+					next = this.nextTask_t.get(next);
+				}
+				catch (Exception e) {
+					System.out.println("Error changeTaskOrder: t1 not found");
+				}
 			}
-			catch (Exception e) {
-				System.out.println("Error changeTaskOrder: first task is not part of tasks of current vehicle.");
-			}
+			if (prev == null) 
+				this.nextTask_v.put(v, t2);
+			else
+				this.nextTask_t.put(prev, t2);
+			this.nextTask_t.put(t2, t1);
+			this.nextTask_t.put(t1, postT2);
 		}
-		if (prevTemp == null) 
-			this.nextTask_v.put(v, t2);
-		else 
-			this.nextTask_t.put(prevTemp, t2);
-		this.nextTask_t.put(t2, postT1);
 		
-		while(temp != t2) {
-			try {
-				prevTemp = temp;
-				temp = this.nextTask_t.get(temp);
+		else {
+			PTask prev = null;
+			PTask next = this.nextTask_v.get(v);
+			
+			while  (next != t1) {
+				try {
+					prev = next;
+					next = this.nextTask_t.get(next);
+				}
+				catch (Exception e) {
+					System.out.println("Error changeTaskOrder: t1 not found");
+				}
 			}
-			catch (Exception e) {
-				System.out.println("Error changeTaskOrder: second task is not part of tasks of current vehicle.");
+			
+			if (prev == null)
+				this.nextTask_v.put(v, t2);
+			else
+				this.nextTask_t.put(prev, t2);
+			this.nextTask_t.put(t2, postT1);
+			
+			while (next != t2) {
+				try {
+					prev = next;
+					next = this.nextTask_t.get(next);
+				}
+				catch (Exception e) {
+					System.out.println("Error changeTaskOrder: t2 not found");
+				}
 			}
+			
+			this.nextTask_t.put(prev, t1);
+			this.nextTask_t.put(t1, postT2);
 		}
-		this.nextTask_t.put(prevTemp, t1);
-		this.nextTask_t.put(t1, postT2);
 		
 		this.updateTime(v);
 	}
@@ -166,6 +217,8 @@ public class Solution implements Comparable<Solution>{
 	public List<Solution> neighbours(List<Constraint> constraints){
 		List<Solution> solutions = new ArrayList<Solution>();
 		for (Vehicle v1: this.nextTask_v.keySet()) {
+			if (this.nextTask_v.get(v1) == null)
+				continue;
 			PTask currentTaskV1 = this.nextTask_v.get(v1);
 			while(currentTaskV1 != null) {
 				PTask nextTaskV1 = this.nextTask_t.get(currentTaskV1);
@@ -173,32 +226,36 @@ public class Solution implements Comparable<Solution>{
 					Solution temp = new Solution(this);
 					temp.changeTaskOrder(v1, currentTaskV1, nextTaskV1);
 					nextTaskV1 = this.nextTask_t.get(nextTaskV1);
-					if (temp.valid(constraints))
+					//System.out.println(temp);
+					if (temp.valid(constraints)) {
 						solutions.add(temp);
+						//System.out.println("Gardé !");
+					}
 				}
-				nextTaskV1 = this.nextTask_t.get(nextTaskV1);
+				currentTaskV1 = this.nextTask_t.get(currentTaskV1);
 			}
-			
-			if (this.nextTask_v.get(v1) == null)
-				break;
-			
+			//System.out.println(this);
 			for(Vehicle v2: this.nextTask_v.keySet()) {
 				if (v2 == v1)
-					break;
+					continue;
 				Solution temp = new Solution(this);
 				temp.changeVehicle(v1, v2);
+				//System.out.println(temp);
 				if (temp.valid(constraints))
 					solutions.add(temp);
 			}
 		}
+		//System.out.println(solutions);
 		return solutions;
 	}
 	
 	public int cost() {
 		int res = 0;
 		for (Vehicle v : this.nextTask_v.keySet()) {
-			int costV = 0;
+			double costV = 0;
 			PTask currentTask = this.nextTask_v.get(v);
+			if (currentTask != null)
+				costV += currentTask.getCity().distanceTo(v.getCurrentCity());
 			while(currentTask != null) {
 				PTask nextTask = this.nextTask_t.get(currentTask);
 				if (nextTask != null)
@@ -230,6 +287,21 @@ public class Solution implements Comparable<Solution>{
 	
 	public HashMap<PTask, Vehicle> getVehicle(){
 		return this.vehicle;
+	}
+	
+	@Override
+	public String toString() {
+		String r = "";
+		for (Vehicle v: this.nextTask_v.keySet()) {
+			r += v + " " + v.capacity() + ": " ;
+			PTask currentTask = this.nextTask_v.get(v);
+			while(currentTask != null) {
+				r += currentTask.toString() + "; ";
+				currentTask = this.nextTask_t.get(currentTask);
+			}
+			r += "\n";
+		}
+		return r;
 	}
 }
 

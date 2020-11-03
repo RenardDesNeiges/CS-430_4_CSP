@@ -22,12 +22,17 @@ public class CapacityConstraint extends Constraint{
 			else
 				currentWeight -= task.getWeight();
 			
-			if (currentWeight > this.capacity)
-				res = false;
-			
+			if (currentWeight > this.capacity) {
+				return false;
+				//System.out.println("Capacity constraint");
+			}
 			task = solution.getNextTask_t().get(task);
 		}
 		
 		return res;
+	}
+	
+	public String toString() {
+		return "CapacityConstraint : [ " + this.vehicle.toString() + ", " + this.capacity + "]";
 	}
 }
