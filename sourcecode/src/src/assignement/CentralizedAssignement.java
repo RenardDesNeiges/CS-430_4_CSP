@@ -55,7 +55,7 @@ public class CentralizedAssignement implements CentralizedBehavior{
         this.distribution = distribution;
         this.agent = agent;
         this.randomGenerator = new Random(12345);
-        this.probability = 0.1;
+        this.probability = 0.3;
 	}
 	
 	public List<Plan> plan(List<Vehicle> vehicles, TaskSet tasks) {
@@ -89,7 +89,7 @@ public class CentralizedAssignement implements CentralizedBehavior{
 		System.out.println("Building plan. Time allowed = " + (this.timeout_plan/60000));
 		long time_start = System.currentTimeMillis();
 		int iteration = 0;
-		while(iteration<100) {
+		while(System.currentTimeMillis()-time_start <= this.timeout_plan) {
 			System.out.println("Iteration: " + iteration);
 			System.out.println("Building Neighbours");
 			neighbours = guess.neighbours(constraints);
@@ -151,13 +151,14 @@ public class CentralizedAssignement implements CentralizedBehavior{
 							
 	private Solution localChoice(Solution currentGuess, List<Solution> currentNeighbours, double probability) {
 		Collections.shuffle(currentNeighbours);
+		//System.out.println(currentNeighbours);
 		Solution min = Collections.min(currentNeighbours);
 		//for (Solution sol: currentNeighbours)
 			//System.out.println(sol.cost());
-		System.out.println("Chosen: " + min.cost());
+		System.out.println("Chosen: " + currentGuess.toString() + min.cost());
 		
 		if (this.randomGenerator.nextDouble() <= this.probability) {
-			return currentGuess;
+			return currentNeighbours.get(0);
 		}
 		else {
 			return min;

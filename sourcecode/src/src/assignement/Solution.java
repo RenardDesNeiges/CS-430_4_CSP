@@ -241,8 +241,10 @@ public class Solution implements Comparable<Solution>{
 				Solution temp = new Solution(this);
 				temp.changeVehicle(v1, v2);
 				//System.out.println(temp);
-				if (temp.valid(constraints))
+				if (temp.valid(constraints)) {
 					solutions.add(temp);
+					//System.out.println("Gardé.");
+				}
 			}
 		}
 		//System.out.println(solutions);
