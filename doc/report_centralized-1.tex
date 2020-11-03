@@ -29,17 +29,31 @@ We formalize the pickup and delivery problem as a \textit{constraint optimizatio
 
 \subsection{Variables}
 % Describe the variables used in your solution representation %
-Any plan can be described by a given assignment of the 4 following variables:
+Any plan can be described by a given assignment of the 4 following variables (in out implementation, a plan is represented by the \texttt{plan} class):
 \begin{enumerate}
     \item \textbf{nextTask\_v} : the \textit{nextTask\_v} variable is an array of size $N_v$ where each element $nextTask\_v[i]$ represents the first task that the $i^{th}$ vehicle will perform.
     \subitem if $nextTask\_v[i] = j$ it means that the $i^{th}$ vehicle will start it's route by delivering the $j^{th}$ task
     \subitem if $nextTask\_v[i] = NULL$  it means that the $i^{th}$ vehicle has no task to deliver in the given plan.
-    \item \textbf{nextTask\_t} : the \textit{nextTask\_t} variable is an array of size $N_t$ where each element $nextTask\_t[i]$ represents the next task that the vehicle that the vehicle will pickup
+    \item \textbf{nextTask\_t} : the \textit{nextTask\_t} variable is an array of size $2 N_t$ where each element $nextTask\_t[i]$ represents the next task that the vehicle that the vehicle will pickup (in this array the pickup and delivery are represented as two distinct array element to allow for multiple tasks to be picked up by the agent)
     \subitem if $nextTask\_t[i] = j$ it means that the vehicle that delivered the $i^{th}$ task will deliver the $j^{th}$ task next.
     \subitem if $nextTask\_t[i] = NULL$  it means that the vehicle that delivered the $i^{th}$ has no task to deliver next.
-    \item \textbf{time} : the \textit{time} variable is an array of size $N_t$ where each element $time[i]$ represents the position of the $i^{th}$ task in the plan of the vehicle delivering it in the plan (so if it is the first task delivered by some vehicle we would have $time[i]$ = 1)
-    \item \textbf{vehicle} : the \textit{vehicle} variable is an array of size $N_t$ where each elements $vehicle[i]$ describes which vehicle will delivered the $i^{th}$ task
+    \item \textbf{time} : the \textit{time} variable is an array of size $2  N_t$ where each element $time[i]$ represents the position of the $i^{th}$ task in the plan of the vehicle delivering it in the plan (so if it is the first task delivered by some vehicle we would have $time[i]$ = 1, again it is of size $2  N_t$ to represent pickup an delivery as distinct actions)
+    \item \textbf{vehicle} : the \textit{vehicle} variable is an array of size $2N_t$ where each elements $vehicle[i]$ describes which vehicle will delivered the $i^{th}$ task
 \end{enumerate}
+
+\subsection{Cost function}
+% Describe the function that you optimize %
+Since we are looking for an optimal solution of our Constrained Optimization Problem (in the sense that it minimizes a cost function) we need to define our cost function. \\
+
+Given :
+\begin{align*}
+    \textit{Distance between two cities $c_1$ and $c_2$:} && dist(c_1,c_2) \\
+    \textit{Cost per kilometer for a given vehicle:} && \textit{C}_{km} (v)
+\end{align*}
+We define the cost function $cost(P)$ as :
+\begin{align*}
+    cost(P) =  \overbrace{  \sum_{v \in [1...N_v]}  \left[ \mathcal{C}_{km}(v) \cdot  \sum_{\textit{path}} dist(c_1,c_2) \right]}^{\textit{where $c_1$ and $c_2$ are two cites on vehicle v's path}}
+\end{align*}
 
 \subsection{Constraints}
 % Describe the constraints in your solution representation %
@@ -58,20 +72,6 @@ Not all possible variable assignments correspond to a valid plan, a valid plan i
     \textit{A vehicle cannot carry more than it's capacity} && load(i) > capacity(k) \Rightarrow vehicle(i) \neq k
 \end{align*}
 
-\subsection{Cost function}
-% Describe the function that you optimize %
-Since we do not simply try to solve the constraint satisfaction problem but are actually looking for an optimal solution (in the sense that it minimizes a cost function) we need to define our cost function. \\
-
-Given :
-\begin{align*}
-    \textit{Distance between two cities $c_1$ and $c_2$:} && dist(c_1,c_2) \\
-    \textit{Cost per kilometer for a given vehicle:} && \textit{C}_{km} (v)
-\end{align*}
-We define the cost function $cost(P)$ as :
-\begin{align*}
-    cost(P) =  \overbrace{  \sum_{v \in [1...N_v]}  \left[ \mathcal{C}_{km}(v) \cdot  \sum_{\textit{path}} dist(c_1,c_2) \right]}^{\textit{where $c_1$ and $c_2$ are two cites on vehicle v's path}}
-\end{align*}
-
 \section{Stochastic optimization}
 
 Because of the high computational complexity of the problem we search for a solution using a \textit{Stochastic Local Search method (SLS)} that can be described by the following algorithm :
@@ -79,10 +79,9 @@ Because of the high computational complexity of the problem we search for a solu
 
 \subsection{Stochastic optimization algorithm}
 % Describe your stochastic optimization algorithm %
-
 \begin{algorithm}[H]
     \SetAlgoLined
-    \caption{Stochastic Local Search for Constraint Optimization Problem}
+    \caption{Stochastic Local Search for Constrained Optimization Problem}
     S $\leftarrow$ GenerateInitialSolution($<X,D,C,f>$) \\
     \Repeat(){  \textbf{stable\_solution} $\lor$ \textbf{timeout} }{
         $A_{old} \leftarrow A$ \\
@@ -91,13 +90,16 @@ Because of the high computational complexity of the problem we search for a solu
     }
     \Return{A}
 \end{algorithm}
-
+This algorithm is implemented in the \texttt{plan} function of the \texttt{CentralizedAssignement} class.
 \subsection{Initial solution}
 % Describe how you generate the initial solution %
+We initialize our \textit{COP} with a naïve solution to the pickup and delivery problem where we a
 
 \subsection{Generating neighbors}
 % Describe how you generate neighbors %
+The set \textit{succ} of neighbors is generated (implementation in the \texttt{neighbours} function of class \texttt{Solution}) by generating  every possible exchange of two tasks in the order of pickup/delivery of tasks and every possible change of assignment of vehicle per task. So each \textit{succ} is a set of size $N_t!+N_v\cdot N_t$.
 
+\subsection{}
 
 
 \section{Results}
