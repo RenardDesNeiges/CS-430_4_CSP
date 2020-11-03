@@ -38,18 +38,18 @@ public class CentralizedAssignement implements CentralizedBehavior{
 	public void setup(Topology topology, TaskDistribution distribution, Agent agent) {
 		
 		// this code is used to get the timeouts
-        LogistSettings ls = null;
+        /*LogistSettings ls = null;
         try {
             ls = Parsers.parseSettings("config" + File.separator + "settings_default.xml");
         }
         catch (Exception exc) {
             System.out.println("There was a problem loading the configuration file.");
-        }
+        }*/
         
      // the setup method cannot last more than timeout_setup milliseconds
-        timeout_setup = ls.get(LogistSettings.TimeoutKey.SETUP);
+        timeout_setup = 300000; //ls.get(LogistSettings.TimeoutKey.SETUP);
         // the plan method cannot execute more than timeout_plan milliseconds
-        timeout_plan = ls.get(LogistSettings.TimeoutKey.PLAN);
+        timeout_plan = 300000; //ls.get(LogistSettings.TimeoutKey.PLAN);
         
         this.topology = topology;
         this.distribution = distribution;

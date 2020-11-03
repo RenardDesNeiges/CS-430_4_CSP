@@ -229,7 +229,7 @@ public class Solution implements Comparable<Solution>{
 					//System.out.println(temp);
 					if (temp.valid(constraints)) {
 						solutions.add(temp);
-						//System.out.println("Gardé !");
+						//System.out.println("Gard !");
 					}
 				}
 				currentTaskV1 = this.nextTask_t.get(currentTaskV1);
