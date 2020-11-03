@@ -6,9 +6,14 @@
 % Add other packages here %
 
 
+\usepackage{amssymb}
+\usepackage{mathtools}
+\usepackage[ruled,vlined]{algorithm2e}
+\usepackage{amsthm}
+
 % Put your group number and names in the author field %
 \title{\bf Excercise 4\\ Implementing a centralized agent}
-\author{Group \textnumero : Student 1, Student 2}
+\author{Group \textnumero : 272257, 272709}
 
 
 % N.B.: The report should not be longer than 3 pages %
@@ -19,7 +24,7 @@
 
 \section{Solution Representation}
 
-We formalize the pickup and delivery problem as a \textit{constraint optimization problem}, where we describe an entire plan (a set of actions leading to all tasks being completed). A plan in the \textit{COP} is formally a tuple $< X, D, C, f >$ where $X$ is a set of variables describing a plan, $D$ the domain of the variables $x_i \in X$, $C$ a set of constraints that a plan needs to fulfill and $f$ a value function that we are trying to minimize. We call $N_v$ the number of vehicles and $N_t$ the number of tasks.
+We formalize the pickup and delivery problem as a \textit{constraint optimization problem}. The \textit{COP} is formally a tuple $< X, D, C, f >$ where $X$ is a set of variables describing a plan, $D$ the domain of the variables $x_i \in X$, $C$ a set of constraints that a plan needs to fulfill and $f$ a cost function that we are trying to minimize. A plan $P$ is given by an assignment of the variables in $X$ (where the constraints in $C$ are satisfied). We call $N_v$ the number of vehicles and $N_t$ the number of tasks.
 
 
 \subsection{Variables}
@@ -53,20 +58,46 @@ Not all possible variable assignments correspond to a valid plan, a valid plan i
     \textit{A vehicle cannot carry more than it's capacity} && load(i) > capacity(k) \Rightarrow vehicle(i) \neq k
 \end{align*}
 
-\subsection{Objective function}
+\subsection{Cost function}
 % Describe the function that you optimize %
+Since we do not simply try to solve the constraint satisfaction problem but are actually looking for an optimal solution (in the sense that it minimizes a cost function) we need to define our cost function. \\
 
+Given :
+\begin{align*}
+    \textit{Distance between two cities $c_1$ and $c_2$:} && dist(c_1,c_2) \\
+    \textit{Cost per kilometer for a given vehicle:} && \textit{C}_{km} (v)
+\end{align*}
+We define the cost function $cost(P)$ as :
+\begin{align*}
+    cost(P) =  \overbrace{  \sum_{v \in [1...N_v]}  \left[ \mathcal{C}_{km}(v) \cdot  \sum_{\textit{path}} dist(c_1,c_2) \right]}^{\textit{where $c_1$ and $c_2$ are two cites on vehicle v's path}}
+\end{align*}
 
 \section{Stochastic optimization}
+
+Because of the high computational complexity of the problem we search for a solution using a \textit{Stochastic Local Search method (SLS)} that can be described by the following algorithm :
+
+
+\subsection{Stochastic optimization algorithm}
+% Describe your stochastic optimization algorithm %
+
+\begin{algorithm}[H]
+    \SetAlgoLined
+    \caption{Stochastic Local Search for Constraint Optimization Problem}
+    S $\leftarrow$ GenerateInitialSolution($<X,D,C,f>$) \\
+    \Repeat(){  \textbf{stable\_solution} $\lor$ \textbf{timeout} }{
+        $A_{old} \leftarrow A$ \\
+        $N \leftarrow Succ(A_{old},<X,D,C,f>)$ \\
+        $A \leftarrow Choice(N,f)$
+    }
+    \Return{A}
+\end{algorithm}
 
 \subsection{Initial solution}
 % Describe how you generate the initial solution %
 
-\subsection{Generating neighbours}
+\subsection{Generating neighbors}
 % Describe how you generate neighbors %
 
-\subsection{Stochastic optimization algorithm}
-% Describe your stochastic optimization algorithm %
 
 
 \section{Results}
