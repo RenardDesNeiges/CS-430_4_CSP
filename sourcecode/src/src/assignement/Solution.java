@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Collection;
 import java.lang.Exception;
 
 //Logist import
@@ -44,15 +45,36 @@ public class Solution implements Comparable<Solution>{
 	}
 	
 	public void firstGuess(List<Vehicle> vehicles, List<PTask> pickups, List<PTask> deliveries) {
-		int t = 1;
+		//int t = 1;
 		VehicleCapacityComparator comparator = new VehicleCapacityComparator();
 		Vehicle vMax = Collections.max(vehicles, comparator);
 		long capacity = vMax.capacity();
-		
+
+		//generate of list of vehicle times so we can generate a correct times variable
+		List<Integer> times = new ArrayList<Integer>();
+		for(int i = 0; i <vehicles.size(); i++){
+			times.add(0);
+		}
+
+		//generate a list of "las	t pickups" so that we can correctly generate nextTask_t
+		List<PTask> lastPickup = new ArrayList<PTask>();
+		for (int i = 0; i < pickups.size(); i++) {
+			lastPickup.add(null);
+		}
+
 		for(int i = 0; i < pickups.size(); i++) {
+			this.nextTask_t.put(deliveries.get(i), null);
+		}
+
+		// iterate over every single task
+		for(int i = 0; i < pickups.size(); i++) {
+			System.out.println("pickups");
+			System.out.println(pickups.get(i));
+			System.out.println("deliveries");
+			System.out.println(deliveries.get(i));
 			int test = 1;
 			if (pickups.get(i).getWeight() > capacity)
-				test = 0;
+				test = 1;
 			
 			try {
 				long w = capacity/test;
@@ -61,31 +83,74 @@ public class Solution implements Comparable<Solution>{
 			catch (Exception e){
 				System.out.println("Problem unsolvable: task weight bigger that maximum capacity.");
 			}
-			//Stinks as a test but I was not able to use the "throw method"
+
+			int vID = 0;
+			Vehicle v = null;
 			
-			this.time.put(pickups.get(i), t);
-			t++;
-			this.time.put(deliveries.get(i), t);
-			t++;
+			do{
+				vID = (int) (Math.random() * vehicles.size());
+				v = vehicles.get(vID);
+			}while(v.capacity() < pickups.get(i).getWeight());
+			
+			this.time.put(pickups.get(i), times.get(vID));
+			times.set(vID,times.get(vID)+1);
+			this.time.put(deliveries.get(i), times.get(vID));
+			times.set(vID, times.get(vID) + 1);
+
+			//this.time.put(pickups.get(i), t);
+			//t++;
+			//this.time.put(deliveries.get(i), t);
+			//t++;
+			
 			this.nextTask_t.put(pickups.get(i), deliveries.get(i));
 			
-			if (i == 0) 
+			System.out.println(v.id());
+
+			if(times.get(vID) <=2){
+				this.nextTask_v.put(v, pickups.get(i));
+			}
+			else{
+				System.out.println(lastPickup.get(vID));
+				this.nextTask_t.put(lastPickup.get(vID), pickups.get(i));
+				System.out.println(this.nextTask_t.get(lastPickup.get(vID)));
+			}
+			lastPickup.set(vID, deliveries.get(i));
+			
+			/*if (i == 0) 
 				this.nextTask_v.put(vMax, pickups.get(i));
 			else 
-				this.nextTask_t.put(deliveries.get(i-1), pickups.get(i));
-			
+				this.nextTask_t.put(deliveries.get(i-1), pickups.get(i));*/
+
 			this.nextTask_t.put(pickups.get(i), deliveries.get(i));
-			this.vehicle.put(pickups.get(i), vMax);
-			this.vehicle.put(deliveries.get(i), vMax);
+			System.out.println(this.nextTask_t.get(pickups.get(i)));
+			this.vehicle.put(pickups.get(i), v);
+			this.vehicle.put(deliveries.get(i), v);
+
+			System.out.println("NEXT STEP\n");
 			
-			if (i == deliveries.size()-1)
-				this.nextTask_t.put(deliveries.get(i), null);
+			//this.nextTask_t.put(pickups.get(i), deliveries.get(i));
+			//this.vehicle.put(pickups.get(i), vMax);
+			//this.vehicle.put(deliveries.get(i), vMax);
+			
+			/*if (i == deliveries.size()-1)
+				this.nextTask_t.put(deliveries.get(i), null);*/
 		}
 		
-		for (Vehicle v: vehicles) {
-			if (v != vMax)
-				this.nextTask_v.put(v, null);
+		//for (Vehicle v: vehicles) {
+		for (int vID = 0; vID<vehicles.size();vID++){
+			//if (v != vMax)
+			if(times.get(vID) == 0)
+				//this.nextTask_v.put(v, null);
+				this.nextTask_v.put(vehicles.get(vID), null);
 		}
+		System.out.println("this.nextTask_t");
+		System.out.println(this.nextTask_t);
+		System.out.println("this.nextTask_v");
+		System.out.println(this.nextTask_v);
+		System.out.println("this.time");
+		System.out.println(this.time);
+		System.out.println("this.vehicle");
+		System.out.println(this.vehicle);
 	}
 	
 	public boolean valid(List<Constraint> constraints) {
@@ -243,7 +308,7 @@ public class Solution implements Comparable<Solution>{
 				//System.out.println(temp);
 				if (temp.valid(constraints)) {
 					solutions.add(temp);
-					//System.out.println("Gardé.");
+					//System.out.println("Gard.");
 				}
 			}
 		}
