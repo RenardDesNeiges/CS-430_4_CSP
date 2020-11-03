@@ -93,7 +93,7 @@ Because of the high computational complexity of the problem we search for a solu
 This algorithm is implemented in the \texttt{plan} function of the \texttt{CentralizedAssignement} class.
 \subsection{Initial solution}
 % Describe how you generate the initial solution %
-We initialize our \textit{COP} with a naïve solution to the pickup and delivery problem where we a
+We initialize our \textit{COP} with a naïve solution to the pickup and delivery problem for multiple agents where we give each agent a random subset of tasks (in such a way that all tasks are handled) in a random order. This initial assignment doesn't account for the possibility of having multiple tasks loaded simultaneously by a single agent, so each pickup is immediately followed by a delivery in the initial plan (which may not be true for all following plans).
 
 \subsection{Generating neighbors}
 % Describe how you generate neighbors %
@@ -120,19 +120,28 @@ In order to minimize to cost we choose the neighbor that will replace the curren
 \subsubsection{Setting}
 % Describe the settings of your experiment: topology, task configuration, number of tasks, number of vehicles, etc. %
 % and the parameters you are analyzing %
+We run a series of simulations for the PDP with a timeout of $30s$ and a varying number of agents (from 1 to 4 agents). We use the seed \texttt{12345}. Each agent is given a cost per kilometer of $50$.
 
 \subsubsection{Observations}
 % Describe the experimental results and the conclusions you inferred from these results %
+We get the following results : 
+\begin{align*} 
+    \textit{1 vehicle} && \textit{2 vehicle} && \textit{3 vehicle} && \textit{4 vehicle} \\
+   cost = 183775 && cost = 258665 && cost = 259915 && cost = 3759 
+\end{align*}
+
+We observe that the total cost does not change linearly with the vehicle number, we believe this is a consequence of the fact that the algorithm performs a local search.
 
 \subsection{Experiment 2: Different configurations}
 % Run simulations for different configurations of the environment (i.e. different tasks and number of vehicles) %
 
-\subsubsection{Setting}
+\subsubsection{Per-agent cost and fairness}
 % Describe the settings of your experiment: topology, task configuration, number of tasks, number of vehicles, etc. %
-
-\subsubsection{Observations}
+Running the algorithm with varying per-vehicle cost shows us that for an unbalanced \textit{cost per km} distribution. The system will allocate example, given a configuration of $\mathcal{C}_f(v_1) = 100,\mathcal{C}_f(v_2) = 50,\mathcal{C}_f(v_3) = 30,\mathcal{C}_f(v_4) = 1$ will lead to a completely \textit{unfair} repartition of tasks where the vehicle with cost $\mathcal{C}_f(v_4) = 1$ will carry every single task. It is interesting to note that this is also a consequence of our \textit{cost per km} metric, it would be very different if we optimized over time.
+%\subsubsection{Complexity}
 % Describe the experimental results and the conclusions you inferred from these results %
 % Reflect on the fairness of the optimal plans. Observe that optimality requires some vehicles to do more work than others. %
 % How does the complexity of your algorithm depend on the number of vehicles and various sizes of the task set? %
+%Computing a complexity of our algorithm is actually far from obvious since it is an \textit{any-time}: it will always return a solution. In order to measure its optimality we  
 
 \end{document}
