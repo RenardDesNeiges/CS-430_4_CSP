@@ -47,15 +47,15 @@ public class CentralizedAssignement implements CentralizedBehavior{
         }*/
         
      // the setup method cannot last more than timeout_setup milliseconds
-        timeout_setup = 300000; //ls.get(LogistSettings.TimeoutKey.SETUP);
+        timeout_setup = 10000; //ls.get(LogistSettings.TimeoutKey.SETUP);
         // the plan method cannot execute more than timeout_plan milliseconds
-        timeout_plan = 300000; //ls.get(LogistSettings.TimeoutKey.PLAN);
+        timeout_plan = 10000; //ls.get(LogistSettings.TimeoutKey.PLAN);
         
         this.topology = topology;
         this.distribution = distribution;
         this.agent = agent;
         this.randomGenerator = new Random(12345);
-        this.probability = 0.3;
+        this.probability = 0.4;
 	}
 	
 	public List<Plan> plan(List<Vehicle> vehicles, TaskSet tasks) {
@@ -90,6 +90,7 @@ public class CentralizedAssignement implements CentralizedBehavior{
 		long time_start = System.currentTimeMillis();
 		int iteration = 0;
 		while(System.currentTimeMillis()-time_start <= this.timeout_plan) {
+			System.out.println("Time" + (System.currentTimeMillis()-time_start));
 			System.out.println("Iteration: " + iteration);
 			System.out.println("Building Neighbours");
 			neighbours = guess.neighbours(constraints);
@@ -103,8 +104,9 @@ public class CentralizedAssignement implements CentralizedBehavior{
 		}
 		
 		for (Vehicle v: vehicles) {
-			if (guess.getNextTask_v().get(v) == null)
+			if (guess.getNextTask_v().get(v) == null){
 				plans.add(Plan.EMPTY);
+			}
 			else {
 				PTask currentTask = guess.getNextTask_v().get(v);
 				Plan planV = new Plan(v.getCurrentCity());
